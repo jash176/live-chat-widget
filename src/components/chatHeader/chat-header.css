@@ -1,0 +1,130 @@
+/* Header Styles */
+.chat-widget-header {
+  background-color: #1877f2;
+  color: white;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.chat-widget-header-tabs {
+  display: flex;
+  padding: 8px 16px 0;
+}
+
+.chat-widget-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  opacity: 0.7;
+}
+
+.chat-widget-tab.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.chat-widget-header-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-widget-agents {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.chat-widget-agent-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-left: -10px;
+  object-fit: cover;
+}
+
+.chat-widget-agent-avatar:first-child {
+  margin-left: 0;
+}
+
+.chat-widget-agent-avatar.message-icon {
+  background-color: #55c3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-widget-header h2 {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 12.4px;
+  margin: 0;
+  font-weight: 500;
+  line-height: 18px;
+  color: #fff;
+}
+
+.chat-widget-header p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.chat-widget-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+/* Responsive adjustments for even smaller screens */
+@media (max-height: 500px) {
+  .chat-widget-header {
+    padding-top: 0;
+    padding-bottom: 8px;
+  }
+
+  .chat-widget-header-content {
+    padding: 8px 16px;
+  }
+
+  .chat-widget-agents {
+    margin-bottom: 4px;
+  }
+
+  .chat-widget-agent-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .chat-widget-header h2 {
+    font-size: 16px;
+  }
+
+  .chat-widget-header p {
+    font-size: 12px;
+  }
+}
+
+/* Fix for input visibility with on-screen keyboard */
+@media (max-height: 600px) {
+  .chat-widget-header {
+    flex-shrink: 0;
+  }
+}

@@ -271,18 +271,12 @@ export default function ChatWidget() {
 }
 
 // Mount the widget inside a dynamically created div
-function mountChatWidget() {
-  let widgetContainer = document.getElementById("chat-widget-container");
-  if (!widgetContainer) {
-    widgetContainer = document.createElement("div");
-    widgetContainer.id = "chat-widget-container";
-    document.body.appendChild(widgetContainer);
-  }
-  createRoot(widgetContainer).render(<ChatWidget />);
-}
 
-// Attach function to window so it can be triggered externally
-if (typeof window !== "undefined") {
-  window.ChatWidget = window.ChatWidget || {};
-  window.ChatWidget.mount = mountChatWidget;
-}
+    let widgetContainer = document.getElementById("chat-widget-container");
+    if (!widgetContainer) {
+      widgetContainer = document.createElement("div");
+      widgetContainer.id = "chat-widget-container";
+      document.body.appendChild(widgetContainer);
+    }
+    createRoot(widgetContainer).render(<ChatWidget />);
+

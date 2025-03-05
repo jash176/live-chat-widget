@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import {createRoot} from "react-dom/client"
 import { MessageSquare } from "lucide-react";
 import "./chat-widget.css";
 import ChatInput from "../chatInput/ChatInput";
@@ -10,21 +11,14 @@ import { URLS } from "@/utils/generalUrls";
 import axios from "axios";
 import { socket } from "@/config/socket";
 const apiKey =
-  "20c1aaec2416da02e32fd4e557ad2b52c2e9a8c845e6faacafab318503d2c4d4";
+  "fa4960a7c6d03307f4f3b260a318bda1140cb4e368cca4ab4ccfe9176feab536";
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sessionId, setSessionId] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [currentAgent, setCurrentAgent] = useState(null);
-  const [messages, setMessages] = useState([
-    {
-      id: Date.now().toString(),
-      sender: "business",
-      content: "Hello! How may I assist you today?",
-      contentType: "text",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   const [widgetSettings, setWidgetSettings] = useState(null);
   const widgetRef = useRef(null);
@@ -90,7 +84,6 @@ export default function ChatWidget() {
           },
         }
       );
-      console.log(response.data.data);
       if (response.data.data.currentAgent) {
         setCurrentAgent(response.data.data.currentAgent);
       }
@@ -107,14 +100,14 @@ export default function ChatWidget() {
     // Add message to the chat container
   };
 
-  const sendMessage = async (input) => {
-    if (!input.trim()) return;
+  const sendMessage = async (content, type, mediaUrl) => {
+    if ((type === "text" && !content.trim()) || (type !== "text" && !mediaUrl)) return
     // Add message to local state immediately
     const newMessage = {
       id: Date.now().toString(),
       sender: "customer",
-      content: input,
-      contentType: "text",
+      content: type === "text" ? content : mediaUrl,
+      contentType: type,
       status: "sending", // Add status field
     };
     setMessages((prev) => [...prev, newMessage]);
@@ -127,8 +120,26 @@ export default function ChatWidget() {
       }
       data.append("sessionId", sessionId);
       data.append("sender", "customer");
-      data.append("content", input);
-      data.append("contentType", "text");
+      if(type === "text") {
+        data.append("content", content);
+      }else if (type === "image" && mediaUrl) {
+        // For image, we need to convert the data URL to a Blob
+        if (mediaUrl.startsWith('data:image')) {
+          const blob = await fetch(mediaUrl).then(r => r.blob())
+          data.append("file", blob, "image.jpg")
+        } else {
+          data.append("file", mediaUrl)
+        }
+      } else if (type === "audio" && mediaUrl) {
+        // For audio from recorder, we already have a Blob URL
+        if (mediaUrl.startsWith('blob:')) {
+          const blob = await fetch(mediaUrl).then(r => r.blob())
+          data.append("file", blob, "audio.webm")
+        } else {
+          data.append("file", mediaUrl)
+        }
+      }
+      data.append("contentType", type);
       const response = await axios.post(
         `${URLS.baseUrl}/messages-service/send-message`,
         data,
@@ -154,6 +165,53 @@ export default function ChatWidget() {
       console.log(err);
     }
   };
+  // const sendAttachment = async (file, type) => {
+  //   if (!input.trim()) return;
+  //   // Add message to local state immediately
+  //   const newMessage = {
+  //     id: Date.now().toString(),
+  //     sender: "customer",
+  //     contentType: type,
+  //     content: file,
+  //     status: "sending", // Add status field
+  //   };
+  //   setMessages((prev) => [...prev, newMessage]);
+  //   try {
+  //     console.log("Sending messages");
+  //     const data = new FormData();
+  //     data.append("businessId", 1);
+  //     if (userEmail) {
+  //       data.append("customerEmail", userEmail);
+  //     }
+  //     data.append("sessionId", sessionId);
+  //     data.append("sender", "customer");
+  //     data.append("file", file);
+  //     data.append("contentType", type);
+  //     const response = await axios.post(
+  //       `${URLS.baseUrl}/messages-service/send-message`,
+  //       data,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+  //     // Update message status to sent
+  //     setMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.id === newMessage.id ? { ...msg, status: "sent" } : msg
+  //       )
+  //     );
+  //     console.log(response.data);
+  //   } catch (err) {
+  //     setMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.id === newMessage.id ? { ...msg, status: "error" } : msg
+  //       )
+  //     );
+  //     console.log(err);
+  //   }
+  // };
 
   const getWidgetSettings = async () => {
     try {
@@ -199,14 +257,12 @@ export default function ChatWidget() {
           />
           <ChatMessages
             messages={messages}
-            avatar={currentAgent.avatar ?? widgetSettings.avatarUrl}
+            avatar={currentAgent?.avatar ?? widgetSettings?.avatarUrl}
             senderName={widgetSettings.businessName}
             colorScheme={widgetSettings.colorScheme}
           />
           <ChatInput
-            onSendMessage={sendMessage}
-            inputRef={inputRef}
-            onSendAudio={() => {}}
+            onSendMessage={sendMessage} inputRef={inputRef}
           />
         </div>
       )}
@@ -226,4 +282,7 @@ function mountChatWidget() {
 }
 
 // Attach function to window so it can be triggered externally
-window.ChatWidget = { mount: mountChatWidget };
+if (typeof window !== "undefined") {
+  window.ChatWidget = window.ChatWidget || {};
+  window.ChatWidget.mount = mountChatWidget;
+}

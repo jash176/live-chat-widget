@@ -17,6 +17,37 @@ export default function ChatMessages({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  function getAssetUrl(url) {
+    if (url && url.startsWith("/public")) {
+      return `${URLS.assetsUrl}${url}`;
+    }
+    return url;
+  }
+
+  const renderMessageContent = (message) => {
+    switch (message.contentType) {
+      case "image":
+        return (
+          <div className="chat-widget-message-media">
+            <img
+              src={getAssetUrl(message.content) || "/placeholder.svg"}
+              alt="Shared image"
+              className="chat-widget-message-image"
+            />
+          </div>
+        )
+      case "audio":
+        return (
+          <div className="chat-widget-message-media">
+            <audio src={getAssetUrl(message.content)} controls className="chat-widget-message-audio" />
+          </div>
+        )
+      case "text":
+      default:
+        return message.content
+    }
+  }
+
   return (
     <div className="chat-widget-messages">
       {messages.map((message) => (
@@ -37,7 +68,11 @@ export default function ChatMessages({
               <div className="chat-widget-message-sender">{senderName}</div>
             )}
             <div
-              className="chat-widget-message-bubble"
+              className={`chat-widget-message-bubble ${
+                message.type === "image" || message.type === "audio"
+                  ? "media-bubble"
+                  : ""
+              }`}
               style={{
                 backgroundColor:
                   message.sender === "business"
@@ -45,7 +80,7 @@ export default function ChatMessages({
                     : colorScheme ?? "#1877f2",
               }}
             >
-              {message.content}
+              {renderMessageContent(message)}
             </div>
           </div>
         </div>

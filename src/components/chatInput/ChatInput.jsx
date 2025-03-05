@@ -6,46 +6,51 @@ import ImageAttachment from "../imageAttachment/ImageAttachment";
 import AudioRecorder from "../audioRecorder/AudioRecorder";
 import EmojiPicker from "../emojiPicker/EmojiPicker";
 
-export default function ChatInput({ onSendMessage, inputRef, onSendAudio }) {
+export default function ChatInput({ inputRef, onSendMessage }) {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showImageAttachment, setShowImageAttachment] = useState(false);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
+  const [selectedImage, setSelectedImage] = useState (null);
+  const [recordedAudio, setRecordedAudio] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
+  const handleSubmit = (type, media) => {
+    // e.preventDefault();
+   
+    if (type === "image" && media) {
+      onSendMessage("", "image", media);
+      setSelectedImage(null);
+    } else if (type === "audio" && media) {
+      // const audioUrl = URL.createObjectURL(recordedAudio);
+      onSendMessage("", "audio", URL.createObjectURL(media));
+      setRecordedAudio(null);
+    } else if (message.trim()) {
+      console.log("message", message);
+      onSendMessage(message, "text");
       setMessage("");
     }
+    setShowImageAttachment(false);
+    setShowAudioRecorder(false);
   };
 
   const handleEmojiSelect = (emoji) => {
     // Type stirng
     setMessage((prev) => prev + emoji);
+    setShowEmojiPicker(false);
     // Focus the input after selecting an emoji
     inputRef.current?.focus();
   };
 
-  const handleSendImage = (imageData) => {
-    // Type string
-    if (onSendImage) {
-      onSendImage(imageData);
-    } else {
-      // Fallback to sending as a message with a placeholder
-      onSendMessage("[Image Attachment]");
-    }
+  const handleImageSelect = (imageData) => {
+    // setSelectedImage(imageData);
+    
+    handleSubmit("image", imageData)
     setShowImageAttachment(false);
   };
 
-  const handleSendAudio = (audioBlob) => {
-    // Type Blob
-    if (onSendAudio) {
-      onSendAudio(audioBlob);
-    } else {
-      // Fallback to sending as a message with a placeholder
-      onSendMessage("[Audio Message]");
-    }
+  const handleAudioRecord = (audioBlob) => {
+    // setRecordedAudio(audioBlob);
+    handleSubmit("audio", audioBlob);
     setShowAudioRecorder(false);
   };
 
@@ -65,18 +70,18 @@ export default function ChatInput({ onSendMessage, inputRef, onSendAudio }) {
       {showImageAttachment && (
         <ImageAttachment
           onCancel={() => setShowImageAttachment(false)}
-          onSend={handleSendImage}
+          onSend={handleImageSelect}
         />
       )}
 
       {showAudioRecorder && (
         <AudioRecorder
           onCancel={() => setShowAudioRecorder(false)}
-          onSend={handleSendAudio}
+          onSend={handleAudioRecord}
         />
       )}
       {!isFeatureActive && (
-        <form className="chat-widget-input-container" onSubmit={handleSubmit}>
+        <form className="chat-widget-input-container">
           <div className="chat-widget-input-actions">
             <button
               type="button"
@@ -111,12 +116,14 @@ export default function ChatInput({ onSendMessage, inputRef, onSendAudio }) {
               placeholder="Compose your message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              // disabled={!!selectedImage || !!recordedAudio}
             />
             <button
-              type="submit"
+              // type="submit"
               className="chat-widget-send-button"
-              disabled={!message.trim()}
+              disabled={!message.trim() }
               aria-label="Send message"
+              onClick={() => handleSubmit()}
             >
               <Send size={18} />
             </button>

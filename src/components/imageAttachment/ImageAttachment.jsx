@@ -4,6 +4,7 @@ import "./image-picker.css";
 
 export default function ImageAttachment({ onCancel, onSend }) {
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -14,7 +15,7 @@ export default function ImageAttachment({ onCancel, onSend }) {
       alert("Please select an image file");
       return;
     }
-
+    setFile(file)
     // Create preview URL
     const reader = new FileReader();
     reader.onload = (event) => {

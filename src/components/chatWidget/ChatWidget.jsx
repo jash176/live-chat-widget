@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {createRoot} from "react-dom/client"
 import { MessageSquare } from "lucide-react";
 import "./chat-widget.css";

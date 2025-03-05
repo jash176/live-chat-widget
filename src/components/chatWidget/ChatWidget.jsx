@@ -12,7 +12,7 @@ import axios from "axios";
 import { socket } from "@/config/socket";
 const apiKey =
   "fa4960a7c6d03307f4f3b260a318bda1140cb4e368cca4ab4ccfe9176feab536";
-export function ChatWidget() {
+export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sessionId, setSessionId] = useState("");
@@ -271,12 +271,8 @@ export function ChatWidget() {
 }
 
 // Mount the widget inside a dynamically created div
-
-    let widgetContainer = document.getElementById("chat-widget-container");
-    if (!widgetContainer) {
-      widgetContainer = document.createElement("div");
-      widgetContainer.id = "chat-widget-container";
-      document.body.appendChild(widgetContainer);
-    }
-    createRoot(widgetContainer).render(<ChatWidget />);
+const root = document.createElement("div");
+document.body.appendChild(root);
+const r = createRoot(root);
+r.render(<ChatWidget />);
 

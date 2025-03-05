@@ -33,4 +33,5 @@ module.exports = {
     },
   },
   mode: "production",
+  externals: {}, // Remove React from externals so it gets bundled
 };

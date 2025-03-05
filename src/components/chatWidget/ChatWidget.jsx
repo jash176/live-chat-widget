@@ -274,5 +274,5 @@ export const ChatWidget = () => {
 const root = document.createElement("div");
 document.body.appendChild(root);
 const r = createRoot(root);
-r.render(<ChatWidget />);
+r.render(React.createElement(ChatWidget, null));
 

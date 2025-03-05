@@ -33,5 +33,8 @@ module.exports = {
     },
   },
   mode: "production",
-  externals: {}, // Remove React from externals so it gets bundled
+  externals: {
+    react: "React",
+    "react-dom": "ReactDOM"
+  }, // Remove React from externals so it gets bundled
 };

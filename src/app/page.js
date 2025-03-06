@@ -1,4 +1,4 @@
-import ChatWidget from "@/components/chatWidget/ChatWidget";
+import {ChatWidget} from "@/components/chatWidget/ChatWidget";
 import React from "react";
 
 const Home = () => {

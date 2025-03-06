@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Square, Send, X } from "lucide-react";
 import "./audio-recorder.css";
 

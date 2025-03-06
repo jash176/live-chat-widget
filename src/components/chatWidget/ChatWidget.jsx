@@ -10,6 +10,7 @@ import ChatHeader from "../chatHeader/ChatHeader";
 import { URLS } from "@/utils/generalUrls";
 import axios from "axios";
 import { socket } from "@/config/socket";
+import ChatTrigger from "../chatTrigger/ChatTrigger";
 const apiKey =
   "fa4960a7c6d03307f4f3b260a318bda1140cb4e368cca4ab4ccfe9176feab536";
 export const ChatWidget = () => {
@@ -19,10 +20,27 @@ export const ChatWidget = () => {
   const [userEmail, setUserEmail] = useState("");
   const [currentAgent, setCurrentAgent] = useState(null);
   const [messages, setMessages] = useState([]);
-
+  const [showTrigger, setShowTrigger] = useState(false)
+  const [currentTrigger, setCurrentTrigger] = useState(null)
   const [widgetSettings, setWidgetSettings] = useState(null);
   const widgetRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Example trigger messages
+  const triggerMessages = [
+    {
+      message: "Hello! How can I help you? This specific thing needs to be added to your account.",
+      agentName: "Beth from Crisp",
+      agentAvatar: "/placeholder.svg?height=40&width=40",
+      condition: { type: "time", value: 5 }, // Show after 5 seconds
+    },
+    {
+      message: "I noticed you're looking at our pricing. Need help choosing a plan?",
+      agentName: "Beth from Crisp",
+      agentAvatar: "/placeholder.svg?height=40&width=40",
+      condition: { type: "scroll", value: 50 }, // Show at 50% scroll
+    },
+  ]
 
   // Check if device is mobile
   useEffect(() => {
@@ -57,6 +75,23 @@ export const ChatWidget = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen || showTrigger) return
+
+    // Time-based triggers
+    const timeBasedTriggers = triggerMessages.filter((t) => t.condition.type === "time")
+    timeBasedTriggers.forEach((trigger) => {
+      const timer = setTimeout(() => {
+        if (!isOpen && !showTrigger) {
+          setCurrentTrigger(trigger)
+          setShowTrigger(true)
+        }
+      }, trigger.condition.value * 1000)
+
+      return () => clearTimeout(timer)
+    })
+  }, [isOpen, showTrigger, triggerMessages])
 
   const toggleWidget = () => {
     setIsOpen(!isOpen);
@@ -228,10 +263,43 @@ export const ChatWidget = () => {
     }
   };
 
+  const handleTriggerContinue = () => {
+    setShowTrigger(false)
+    setIsOpen(true)
+
+    // Add the trigger message to the chat
+    if (currentTrigger) {
+      // const newMessage = {
+      //   id: messages.length + 1,
+      //   sender: "agent",
+      //   senderName: currentTrigger.agentName,
+      //   content: currentTrigger.message,
+      //   timestamp: new Date(),
+      //   avatar: currentTrigger.agentAvatar,
+      //   type: "text",
+      // }
+      // setMessages((prev) => [...prev, newMessage])
+    }
+  }
+
+  const handleTriggerClose = () => {
+    setShowTrigger(false)
+  }
+
   if (!widgetSettings) return null;
 
   return (
     <>
+    {showTrigger && currentTrigger && !isOpen && (
+        <ChatTrigger
+          message={currentTrigger.message}
+          agentName={currentTrigger.agentName}
+          agentAvatar={currentTrigger.agentAvatar}
+          onContinue={handleTriggerContinue}
+          onClose={handleTriggerClose}
+        />
+      )}
+  
       {/* Chat button (visible when widget is closed) */}
       {!isOpen && (
         <button
@@ -239,7 +307,11 @@ export const ChatWidget = () => {
           onClick={toggleWidget}
           aria-label="Open chat widget"
         >
-          <MessageSquare />
+          {/* <MessageSquare /> */}
+          <img src={`${URLS.assetsUrl}/public/app_logo.png`} style={{
+            width: "30px",
+            width: "30px",
+          }} />
         </button>
       )}
 

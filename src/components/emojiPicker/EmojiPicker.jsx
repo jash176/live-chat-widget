@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import "./emoji-picker.css";
 
 // Common emojis for simplicity - in a real app, you might use a library like emoji-mart

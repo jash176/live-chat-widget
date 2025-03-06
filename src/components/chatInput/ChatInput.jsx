@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Smile, Paperclip, Mic, Send } from "lucide-react";
 import "./chat-input.css";
 import ImageAttachment from "../imageAttachment/ImageAttachment";

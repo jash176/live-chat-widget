@@ -1,4 +1,5 @@
-import { X, MessageSquare, Book, Search } from "lucide-react";
+import React from 'react'
+import { X, MessageSquare } from "lucide-react";
 import "./chat-header.css";
 import { URLS } from "@/utils/generalUrls";
 

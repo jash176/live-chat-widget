@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import "./chat-trigger.css"
 
 export default function ChatTrigger({ message, agentName, agentAvatar, onContinue, onClose }) {

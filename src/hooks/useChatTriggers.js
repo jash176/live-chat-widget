@@ -1,8 +1,16 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { URLS } from "@/utils/generalUrls";
+import { socket } from "@/config/socket";
 
-const useChatTriggers = (apiKey, openChatbox, sendMessage) => {
+// Convert wildcard path (e.g., /page/* or /page/*/**) to regex
+const matchPath = (pattern, pathname) => {
+  const escaped = pattern.replace(/[-\/\\^$+?.()|[\]{}]/g, "\\$&");
+  const regexString = "^" + escaped.replace(/\*/g, ".*") + "$";
+  return new RegExp(regexString).test(pathname);
+};
+
+const useChatTriggers = (apiKey, openChatbox, sessionId) => {
   const [triggers, setTriggers] = useState([]);
 
   useEffect(() => {
@@ -15,45 +23,51 @@ const useChatTriggers = (apiKey, openChatbox, sendMessage) => {
     if (!triggers.length) return;
 
     triggers.forEach((trigger) => {
-      // **1️⃣ After Delay Trigger**
-      if (trigger.condition === "after_delay") {
-        setTimeout(
-          () => executeTrigger(trigger),
-          parseInt(trigger.condition_value) * 1000
-        );
-      }
+      trigger.conditions.forEach((condition) => {
+        switch (condition.type) {
+          // **1️⃣ After Delay Trigger (Can Combine with Others)**
+          case "after_delay":
+            setTimeout(() => executeTrigger(trigger), parseInt(condition.value) * 1000);
+            break;
 
-      // **2️⃣ On Specific Page Trigger**
-      if (
-        trigger.condition === "on_page" &&
-        window.location.pathname === trigger.condition_value
-      ) {
-        executeTrigger(trigger);
-      }
+          // **2️⃣ On Specific Page Trigger (Can Combine with Delay)**
+          case "on_page":
+            if (matchPath(condition.value, window.location.pathname)) {
+              executeTrigger(trigger);
+            }
+            break;
 
-      // **3️⃣ On Click Link Trigger**
-      if (trigger.condition === "click_link") {
-        document
-          .querySelector(trigger.condition_value)
-          ?.addEventListener("click", () => executeTrigger(trigger));
-      }
+          // **3️⃣ On Click Link Trigger (Can Combine with Page/Delay)**
+          case "on_click_link":
+            document.querySelector(condition.value)?.addEventListener("click", () => executeTrigger(trigger));
+            break;
 
-      // **4️⃣ Leave Intent Trigger (Detect Mouse Leaving Window)**
-      if (trigger.condition === "leave_intent") {
-        document.addEventListener("mouseleave", () => executeTrigger(trigger), {
-          once: true,
-        });
-      }
+          // **4️⃣ Leave Intent Trigger (Can Combine with Page/Delay)**
+          case "on_leave_intent":
+            document.addEventListener(
+              "mouseleave",
+              () => executeTrigger(trigger),
+              { once: true }
+            );
+            break;
+
+          default:
+            break;
+        }
+      });
     });
   }, [triggers]);
 
-  const executeTrigger = (trigger) => {
-    if (trigger.action === "show_message") {
-      sendMessage(trigger.message);
-    } else if (trigger.action === "open_chatbox") {
-      openChatbox();
-    }
-  };
+  const executeTrigger = useCallback(
+    (trigger) => {
+      if (trigger.action === "show_message") {
+        socket.emit("trigger-send-message", { sessionId, trigger });
+      } else if (trigger.action === "open_chatbox") {
+        openChatbox();
+      }
+    },
+    [sessionId, openChatbox]
+  );
 };
 
 export default useChatTriggers;

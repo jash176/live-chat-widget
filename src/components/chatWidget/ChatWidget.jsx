@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import {createRoot} from "react-dom/client"
-import { MessageSquare } from "lucide-react";
 import "./chat-widget.css";
 import ChatInput from "../chatInput/ChatInput";
 import ChatMessages from "../chatMessages/ChatMessages";
@@ -11,8 +10,9 @@ import { URLS } from "@/utils/generalUrls";
 import axios from "axios";
 import { socket } from "@/config/socket";
 import ChatTrigger from "../chatTrigger/ChatTrigger";
-const apiKey =
-  "fa4960a7c6d03307f4f3b260a318bda1140cb4e368cca4ab4ccfe9176feab536";
+import useChatTriggers from "@/hooks/useChatTriggers";
+// const apiKey =
+//   "fa4960a7c6d03307f4f3b260a318bda1140cb4e368cca4ab4ccfe9176feab536";
 export const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -25,7 +25,7 @@ export const ChatWidget = () => {
   const [widgetSettings, setWidgetSettings] = useState(null);
   const widgetRef = useRef(null);
   const inputRef = useRef(null);
-
+  useChatTriggers(apiKey, () => setIsOpen(true), sessionId);
   // Example trigger messages
   const triggerMessages = [
     {
@@ -56,6 +56,7 @@ export const ChatWidget = () => {
     socket.connect();
     socket.emit("join-room", deviceId);
     socket.on("receiveMessage", onReceiveMessage);
+    socket.on("trigger-message", onReceiveTriggerMessage)
     window.addEventListener("resize", checkIfMobile);
 
     return () => window.removeEventListener("resize", checkIfMobile);
@@ -76,22 +77,28 @@ export const ChatWidget = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen || showTrigger) return
+  // useEffect(() => {
+  //   if (isOpen || showTrigger) return
 
-    // Time-based triggers
-    const timeBasedTriggers = triggerMessages.filter((t) => t.condition.type === "time")
-    timeBasedTriggers.forEach((trigger) => {
-      const timer = setTimeout(() => {
-        if (!isOpen && !showTrigger) {
-          setCurrentTrigger(trigger)
-          setShowTrigger(true)
-        }
-      }, trigger.condition.value * 1000)
+  //   // Time-based triggers
+  //   const timeBasedTriggers = triggerMessages.filter((t) => t.condition.type === "time")
+  //   timeBasedTriggers.forEach((trigger) => {
+  //     const timer = setTimeout(() => {
+  //       if (!isOpen && !showTrigger) {
+  //         setCurrentTrigger(trigger)
+  //         setShowTrigger(true)
+  //       }
+  //     }, trigger.condition.value * 1000)
 
-      return () => clearTimeout(timer)
-    })
-  }, [isOpen, showTrigger, triggerMessages])
+  //     return () => clearTimeout(timer)
+  //   })
+  // }, [isOpen, showTrigger, triggerMessages])
+
+  const onReceiveTriggerMessage = (message, trigger) => {
+    setMessages((prev) => [...prev, message]);
+    setCurrentTrigger(trigger);
+    setShowTrigger(true)
+  }
 
   const toggleWidget = () => {
     setIsOpen(!isOpen);

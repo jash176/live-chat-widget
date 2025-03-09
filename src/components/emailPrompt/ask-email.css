@@ -1,0 +1,81 @@
+.chat-container {
+  /* font-family: Arial, sans-serif; */
+  max-width: 240px;
+}
+
+.question-box {
+  display: flex;
+  align-items: center;
+  background-color: #6a1b9a;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.question-text {
+  font-style: italic;
+}
+
+.input-box {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  background: #f3f3f3;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.input-box input {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  padding: 5px;
+  outline: none;
+}
+
+.next-btn {
+  background-color: #6a1b9a;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.confirmation-box {
+  margin-top: 12px;
+  background-color: #6a1b9a;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.confirmation-text {
+  margin: 0;
+  font-size: 12px;
+}
+
+.email-btn {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border: 2px solid #6a1b9a;
+  border-radius: 8px;
+  color: #6a1b9a;
+  background: white;
+  cursor: pointer;
+}
+
+.email-icon {
+  margin-right: 5px;
+}

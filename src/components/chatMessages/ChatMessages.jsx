@@ -3,18 +3,20 @@
 import React, { useEffect, useRef } from "react";
 import "./chat-messages.css";
 import { URLS } from "@/utils/generalUrls";
+import EmailPrompt from "../emailPrompt/EmailPrompt";
 
 export default function ChatMessages({
   messages,
   avatar,
   senderName,
   colorScheme,
+  sessionId,
 }) {
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView();
   }, []);
 
   function getAssetUrl(url) {
@@ -35,18 +37,24 @@ export default function ChatMessages({
               className="chat-widget-message-image"
             />
           </div>
-        )
+        );
       case "audio":
         return (
           <div className="chat-widget-message-media">
-            <audio src={getAssetUrl(message.content)} controls className="chat-widget-message-audio" />
+            <audio
+              src={getAssetUrl(message.content)}
+              controls
+              className="chat-widget-message-audio"
+            />
           </div>
-        )
+        );
+      case "email_prompt":
+        return <EmailPrompt colorScheme={colorScheme} sessionId={sessionId} />;
       case "text":
       default:
-        return message.content
+        return message.content;
     }
-  }
+  };
 
   return (
     <div className="chat-widget-messages">
@@ -56,6 +64,13 @@ export default function ChatMessages({
           className={`chat-widget-message ${
             message.sender === "customer" ? "user-message" : "agent-message"
           }`}
+          style={{
+            display:
+              message.contentType === "email_prompt" &&
+              localStorage.getItem("userEmail")
+                ? "none"
+                : "flex",
+          }}
         >
           {message.sender === "business" && avatar && (
             <div className="chat-widget-message-avatar">

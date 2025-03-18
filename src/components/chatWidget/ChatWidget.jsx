@@ -42,6 +42,8 @@ export const ChatWidget = () => {
     socket.emit("join-room", deviceId);
     socket.on("receiveMessage", onReceiveMessage);
     socket.on("trigger-message", onReceiveTriggerMessage);
+
+    sendMetaData(deviceId)
     window.addEventListener("resize", checkIfMobile);
 
     return () => window.removeEventListener("resize", checkIfMobile);
@@ -61,6 +63,72 @@ export const ChatWidget = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  const getSystemInfo = async () => {
+    const ua = navigator.userAgent;
+    const browserRegex = /(chrome|safari|firefox|edge|opera(?=\/))\/?\s*(\d+)/i;
+    const match = ua.match(browserRegex);
+  
+    let systemInfo = {
+      osName: "unknown",
+      browserName: match ? match[1] : "unknown",
+      browserVersion: match ? match[2] : "unknown",
+      userAgent: ua,
+      engineName: "unknown",
+      engineVersion: "unknown",
+    };
+  
+    // Check if User-Agent Client Hints API is supported
+    if (navigator.userAgentData) {
+      try {
+        const uaData = await navigator.userAgentData.getHighEntropyValues([
+          "platform",
+          "platformVersion",
+        ]);
+        systemInfo.osName = uaData.platform;
+        systemInfo.engineVersion = uaData.platformVersion;
+      } catch (error) {
+        console.warn("Error fetching User-Agent Data:", error);
+      }
+    }
+  
+    return systemInfo;
+  };
+
+  const sendMetaData = async (deviceId) => {
+    try {
+      // Fetch geolocation data from geo.js API
+      const response = await fetch("https://get.geojs.io/v1/ip/geo.json");
+      const geoData = await response.json();
+  
+      // Get system info
+      const systemInfo = await getSystemInfo();
+  
+      const metaData = {
+        sessionId: deviceId,
+        geolocation: {
+          latitude: geoData.latitude || "unknown",
+          longitude: geoData.longitude || "unknown",
+          city: geoData.city || "unknown",
+          country: geoData.country || "unknown",
+          ip: geoData.ip || "unknown",
+          region: geoData.region || "unkown"
+        },
+        system: systemInfo
+      };
+  
+      socket.emit("update_session_meta", metaData);
+    } catch (error) {
+      console.error("Error fetching geolocation data:", error);
+  
+      // If geolocation API fails, send system info only
+      const metaData = {
+        sessionId: deviceId,
+        system: await getSystemInfo()
+      };
+      socket.emit("update_session_meta", metaData);
+    }
+  };
 
   const onReceiveTriggerMessage = (message, trigger) => {
     setMessages((prev) => [...prev, message]);

@@ -23,6 +23,7 @@ export const ChatWidget = () => {
   const [showTrigger, setShowTrigger] = useState(false);
   const [currentTrigger, setCurrentTrigger] = useState(null);
   const [widgetSettings, setWidgetSettings] = useState(null);
+  const [businessId, setBusinessId] = useState(""); // New state for dynamic businessId
   const widgetRef = useRef(null);
   const inputRef = useRef(null);
   useChatTriggers(apiKey, () => setIsOpen(true), sessionId);
@@ -39,11 +40,12 @@ export const ChatWidget = () => {
     setSessionId(deviceId);
     getUserMessages(deviceId);
     socket.connect();
+    // Only emit socket events if businessId is available
     socket.emit("join-room", deviceId);
     socket.on("receiveMessage", onReceiveMessage);
     socket.on("trigger-message", onReceiveTriggerMessage);
 
-    sendMetaData(deviceId)
+    sendMetaData(deviceId);
     window.addEventListener("resize", checkIfMobile);
 
     return () => window.removeEventListener("resize", checkIfMobile);
@@ -66,9 +68,10 @@ export const ChatWidget = () => {
 
   const getSystemInfo = async () => {
     const ua = navigator.userAgent;
+
     const browserRegex = /(chrome|safari|firefox|edge|opera(?=\/))\/?\s*(\d+)/i;
     const match = ua.match(browserRegex);
-  
+
     let systemInfo = {
       osName: "unknown",
       browserName: match ? match[1] : "unknown",
@@ -77,7 +80,7 @@ export const ChatWidget = () => {
       engineName: "unknown",
       engineVersion: "unknown",
     };
-  
+
     // Check if User-Agent Client Hints API is supported
     if (navigator.userAgentData) {
       try {
@@ -91,7 +94,6 @@ export const ChatWidget = () => {
         console.warn("Error fetching User-Agent Data:", error);
       }
     }
-  
     return systemInfo;
   };
 
@@ -100,10 +102,10 @@ export const ChatWidget = () => {
       // Fetch geolocation data from geo.js API
       const response = await fetch("https://get.geojs.io/v1/ip/geo.json");
       const geoData = await response.json();
-  
+
       // Get system info
       const systemInfo = await getSystemInfo();
-  
+
       const metaData = {
         sessionId: deviceId,
         geolocation: {
@@ -112,19 +114,20 @@ export const ChatWidget = () => {
           city: geoData.city || "unknown",
           country: geoData.country || "unknown",
           ip: geoData.ip || "unknown",
-          region: geoData.region || "unkown"
+          region: geoData.region || "unkown",
+          countryCode: geoData.country_code || "unknown",
         },
-        system: systemInfo
+        system: systemInfo,
       };
-  
+
       socket.emit("update_session_meta", metaData);
     } catch (error) {
       console.error("Error fetching geolocation data:", error);
-  
+
       // If geolocation API fails, send system info only
       const metaData = {
         sessionId: deviceId,
-        system: await getSystemInfo()
+        system: await getSystemInfo(),
       };
       socket.emit("update_session_meta", metaData);
     }
@@ -198,7 +201,7 @@ export const ChatWidget = () => {
     try {
       console.log("Sending messages");
       const data = new FormData();
-      data.append("businessId", 1);
+      data.append("businessId", businessId);
       if (userEmail) {
         data.append("customerEmail", userEmail);
       }
@@ -259,6 +262,8 @@ export const ChatWidget = () => {
         params: data,
       });
       setWidgetSettings(response.data.data);
+      console.log("businessId : ", response.data.data.businessId);
+      setBusinessId(response.data.data.businessId); // Set the businessId from the response
       console.log(response.data);
     } catch (error) {
       console.error("Error fetching widget settings:", error);

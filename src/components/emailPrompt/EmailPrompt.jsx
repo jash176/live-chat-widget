@@ -3,7 +3,7 @@ import axios from "axios";
 import "./ask-email.css";
 import { URLS } from "@/utils/generalUrls";
 
-const EmailPrompt = ({ colorScheme, sessionId }) => {
+const EmailPrompt = ({ colorScheme, sessionId, onEmailSubmit }) => {
   const [email, setEmail] = useState("");
 
   const updateEmail = async () => {
@@ -12,12 +12,12 @@ const EmailPrompt = ({ colorScheme, sessionId }) => {
         customerEmail: email,
         sessionId,
       };
-      console.log("Data: ", data);
       const response = await axios.post(
         `${URLS.baseUrl}/messages-service/update-email`,
         data
       );
       if (response.data.success) {
+        onEmailSubmit();
         localStorage.setItem("userEmail", email);
       }
       // handle success

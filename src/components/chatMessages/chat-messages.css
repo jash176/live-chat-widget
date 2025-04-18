@@ -2,12 +2,19 @@
 .chat-widget-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   background-color: #f4f7f9;
   font-family: "Noto Sans", sans-serif;
+}
+
+/* Add a wrapper div for messages with padding */
+.messages-wrapper {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* Message styles */
@@ -105,4 +112,35 @@
     flex: 1;
     min-height: 0;
   }
+}
+
+/* Email notification banner styles */
+.email-notification-banner {
+  position: sticky;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  background-color: #fff3cd;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border-top: 1px solid #ffeeba;
+  transition: background-color 0.2s ease;
+  margin-top: auto; /* Push banner to bottom */
+  margin-left: 6px;
+  margin-right: 6px;
+  border-radius: 12px;
+}
+
+.email-notification-banner:hover {
+  background-color: #ffecb5;
+}
+
+.email-notification-banner span {
+  color: #000000;
+  font-size: 12px;
+  font-weight: 600;
 }
